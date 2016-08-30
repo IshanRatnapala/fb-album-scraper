@@ -15,7 +15,7 @@ function makeUrl (albumId) {
         albumId: albumId,
         query: '?fields=name,photos{images}',
         auth: '&access_token=' + APP_ID + '|' + APP_SECRET
-    }
+    };
 
     return url.host + url.albumId + url.query + url.auth;
 }
@@ -36,7 +36,7 @@ function requestData (url) {
 }
 
 var responseCount = 0;
-var imageCount = 0
+var imageCount = 0;
 function processResponse (response) {
     responseCount++;
     var imageUrls = [];
@@ -69,7 +69,7 @@ function processResponse (response) {
     }
 
     // Download the images
-    downloadAlbum(albumName, imageUrls)
+    downloadAlbum(albumName, imageUrls);
     
 }
 
@@ -88,15 +88,6 @@ function downloadAlbum (albumName, imageUrls) {
     }
     
     var counter = 0;
-    // Download the photos (All at once)
-    // for (var index = 0; index < imageUrls.length; index++) {
-    //     var imageUrl = imageUrls[index];
-    //     download(imageUrl.url, albumFolder + '/' + encodeURIComponent(imageUrl.name) + '.' + imageUrl.url.split('.').pop().split('?')[0], function(){
-    //         counter++;
-    //         console.log('Finished downloading image ' + counter + ' of ' + imageUrls.length);
-    //     });
-    // }
-
     // Download the photos (One by one)
     downloadImage(imageUrls[counter]);
 
