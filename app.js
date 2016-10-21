@@ -13,7 +13,7 @@ function makeUrl (albumId) {
     var url = {
         host: 'https://graph.facebook.com/v2.7/',
         albumId: albumId,
-        query: '?fields=name,photos{images}',
+        query: '?fields=name,photos{images,name}',
         auth: '&access_token=' + APP_ID + '|' + APP_SECRET
     };
 
