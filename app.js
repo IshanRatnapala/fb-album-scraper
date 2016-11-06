@@ -1,3 +1,5 @@
+'use strict';
+
 var https = require('https');
 var fs = require('fs');
 var request = require('request');
@@ -13,7 +15,7 @@ function makeUrl (albumId) {
     var url = {
         host: 'https://graph.facebook.com/v2.7/',
         albumId: albumId,
-        query: '?fields=name,photos{images,name}',
+        query: '?fields=name,photos{images}',
         auth: '&access_token=' + APP_ID + '|' + APP_SECRET
     };
 
@@ -32,22 +34,26 @@ function requestData (url) {
         res.on('end', function () {
             processResponse(buffer);
         });
+    }).on('error', function (e) {
+        console.error(e);
     });
 }
 
 var responseCount = 0;
 var imageCount = 0;
+var albumName = '';
+var imageUrls = [];
+
 function processResponse (response) {
     responseCount++;
-    var imageUrls = [];
     var jsonResponse = JSON.parse(response);
-    var albumName = jsonResponse.name.replace(/[^a-z0-9]+|\s+/gmi, " ").trim();
-    var imageData = jsonResponse.photos.data;
-    var nextSection = jsonResponse.photos.paging.next;
+    albumName = albumName || jsonResponse.name.replace(/[^a-z0-9]+|\s+/gmi, " ").trim();
+    var imageData = jsonResponse.photos ? jsonResponse.photos.data : jsonResponse.data;
+    var nextSection = jsonResponse.photos ? jsonResponse.photos.paging.next : jsonResponse.paging.next;
 
-    console.log("Getting image urls for album: \"" + albumName + "\"\n");
+    // console.log("Getting image urls for album: \"" + albumName + "\"\n");
     logStream.write('> Processing section: ' + responseCount + '\r\n');
-    console.log('processing section: ' + responseCount);
+    console.log('processing section: ' + responseCount + ' for album: "' + albumName + '"');
 
     for (var index = 0; index < imageData.length; index++) {
         imageCount++;
@@ -66,11 +72,10 @@ function processResponse (response) {
         console.log("Looks like we're done getting the links.");
         console.log("Total images: " + imageCount + "\n");
         logStream.write('\r\n' + 'Total images: ' + imageCount + ' from ' + responseCount + ' section(s)!');
-    }
 
-    // Download the images
-    downloadAlbum(albumName, imageUrls);
-    
+        // Download the images
+        downloadAlbum(albumName, imageUrls);
+    }
 }
 
 function downloadAlbum (albumName, imageUrls) {
@@ -86,7 +91,7 @@ function downloadAlbum (albumName, imageUrls) {
     } catch(e) {
         fs.mkdirSync(albumFolder);
     }
-    
+
     var counter = 0;
     // Download the photos (One by one)
     downloadImage(imageUrls[counter]);
